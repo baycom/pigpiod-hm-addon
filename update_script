@@ -1,0 +1,36 @@
+#!/bin/sh
+
+ADDON_NAME=pigpiod
+CONFIG_DIR=/usr/local/etc/config
+RCD_DIR=${CONFIG_DIR}/rc.d
+ADDON_DIR_DATA=/usr/local/addons/${ADDON_NAME}
+ADDON_DIR_WWW=/usr/local/etc/config/addons/www/${ADDON_NAME}
+
+if [ "$1" == "HM-RASPBERRYMATIC" ]; then
+
+  # create necessary directories
+  mkdir -p ${ADDON_DIR_DATA}
+  chmod 755 ${ADDON_DIR_DATA}
+  mkdir -p ${ADDON_DIR_WWW}
+  chmod 755 ${ADDON_DIR_WWW}
+
+  # rc.d
+  mkdir -p ${RCD_DIR}
+  chmod 755 ${RCD_DIR}
+
+  # remove old stuff
+  rm -rf $ADDON_DIR_DATA/*
+  rm -rf $ADDON_DIR_WWW/*
+
+  # copy version
+  cp -R data/* ${ADDON_DIR_DATA}/
+  cp -R www/* ${ADDON_DIR_WWW}/
+
+  # copy startup script
+  cp -R rc.d/* ${RCD_DIR}
+
+  #build system launcher
+  chmod +x ${RCD_DIR}/${ADDON_NAME}
+  sync
+  ${RCD_DIR}/${ADDON_NAME} start
+fi

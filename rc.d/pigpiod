@@ -1,0 +1,68 @@
+#!/bin/sh
+HOMEPATH=/usr/local/addons/pigpiod/
+DAEMON=/usr/local/addons/pigpiod/pigpiod
+DAEMON_ARGS=""
+PIDFILE=/var/run/pigpiod.pid
+
+ADDONNAME=pigpiod
+ADDONDIR=${HOMEPATH}
+
+# change to addon directory
+cd ${HOMEPATH}
+
+do_start()
+{
+	start-stop-daemon --start --quiet --make-pidfile --background --nicelevel -10 --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS
+}
+
+do_stop()
+{
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE
+	if [ -e $PIDFILE ];then
+		rm $PIDFILE
+	fi		
+}
+
+case "$1" in
+  ""|start)
+   	do_start
+   	echo "OK"
+    ;;
+
+  info)
+    VER=$(cat ${ADDONDIR}/VERSION)
+    echo "Version: ${VER}"
+    echo "Info: <b>pigpiod Addon</b><br>"
+    echo "Info: <a href='https://github.com/baycom/pigpiod-hm-addon'>pigpiod-hm-addon at GitHub</a>"
+    echo "Name: pigpiod"
+    echo "Operations: uninstall restart"
+    echo "Config-Url: /addons/pigpiod/config.html"
+    echo "Update: /addons/pigpiod/update-check.cgi"
+    ;;
+
+  stop)
+ 	echo -n "Stopping pigpiod: "
+	do_stop
+	echo "OK"
+    ;;
+    
+  restart)
+	do_stop
+	do_start
+    ;;
+    
+  uninstall)
+	do_stop
+    	rm -rf ${ADDONDIR}
+        rm /usr/local/etc/config/rc.d/pigpiod
+    	echo "OK"
+    ;;
+
+  *)
+    	echo "usage:"
+    	echo "  ${ADDONNAME} [info|start|stop|restart|uninstall]"
+	exit 1
+    ;;
+esac
+
+exit 0
